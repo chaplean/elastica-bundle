@@ -214,7 +214,7 @@ class PopulateCommand extends ContainerAwareCommand
 		try {
 			$this->getContainer()->get('doctrine')->getManager()->getConnection()->connect();
 		} catch(DriverException $e) {
-			throw new \Exception("Can't connect to the database, abort populate before reset');
+			throw new \Exception("Can't connect to the database, abort populate before reset");
 		}
 	}
 }
