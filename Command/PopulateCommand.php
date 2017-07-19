@@ -2,6 +2,7 @@
 
 namespace FOS\ElasticaBundle\Command;
 
+use Doctrine\DBAL\Exception\DriverException;
 use FOS\ElasticaBundle\Event\IndexPopulateEvent;
 use FOS\ElasticaBundle\Event\TypePopulateEvent;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
@@ -112,6 +113,8 @@ class PopulateCommand extends ContainerAwareCommand
             throw new \InvalidArgumentException('Cannot specify type option without an index.');
         }
 
+		$this->checkDatabaseConnection();
+
         if (null !== $index) {
             if (null !== $type) {
                 $this->populateIndexType($output, $index, $type, $reset, $options);
@@ -200,4 +203,18 @@ class PopulateCommand extends ContainerAwareCommand
         $output->writeln(sprintf('<info>Refreshing</info> <comment>%s</comment>', $index));
         $this->indexManager->getIndex($index)->refresh();
     }
+
+	/**
+	 * Checks for database connection before attempting to populate to avoid leaving an empty index
+	 *
+	 * @throw \Exception When connetion to database fails.
+	 */
+	private function checkDatabaseConnection()
+	{
+		try {
+			$this->getContainer()->get('doctrine')->getManager()->getConnection()->connect();
+		} catch(DriverException $e) {
+			throw new \Exception("Can't connect to the database, abort populate before reset');
+		}
+	}
 }
