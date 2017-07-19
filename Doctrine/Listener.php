@@ -45,7 +45,7 @@ class Listener
     public $scheduledForUpdate = array();
 
     /**
-     * IDs of objects scheduled for removal.
+     * Objects scheduled for removal.
      *
      * @var array
      */
@@ -135,6 +135,11 @@ class Listener
         if ($this->objectPersister->handlesObject($entity)) {
             $this->scheduleForDeletion($entity);
         }
+
+		if (count($this->scheduledForDeletion)) {
+			$this->objectPersister->deleteMany($this->scheduledForDeletion);
+			$this->scheduledForDeletion = [];
+		}
     }
 
     /**
@@ -150,10 +155,6 @@ class Listener
         if (count($this->scheduledForUpdate)) {
             $this->objectPersister->replaceMany($this->scheduledForUpdate);
             $this->scheduledForUpdate = array();
-        }
-        if (count($this->scheduledForDeletion)) {
-            $this->objectPersister->deleteManyByIdentifiers($this->scheduledForDeletion);
-            $this->scheduledForDeletion = array();
         }
     }
 
@@ -190,7 +191,7 @@ class Listener
     private function scheduleForDeletion($object)
     {
         if ($identifierValue = $this->propertyAccessor->getValue($object, $this->config['identifier'])) {
-            $this->scheduledForDeletion[] = $identifierValue;
+            $this->scheduledForDeletion[] = $object;
         }
     }
 

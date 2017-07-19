@@ -86,6 +86,11 @@ class MappingBuilder
             unset($mapping['dynamic_templates']);
         }
 
+		if (isset($mapping['_parent'])) {
+			unset($mapping['_parent']['property']);
+			unset($mapping['_parent']['identifier']);
+		}
+
         $this->fixProperties($mapping['properties']);
         if (!$mapping['properties']) {
             unset($mapping['properties']);
