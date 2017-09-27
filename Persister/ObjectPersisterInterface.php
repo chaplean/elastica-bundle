@@ -72,7 +72,8 @@ interface ObjectPersisterInterface
     /**
      * Bulk deletes records from an array of identifiers.
      *
-     * @param array $identifiers array of domain model object identifiers
+     * @param array       $identifiers array of domain model object identifiers
+     * @param string|bool $routing     routing id to use to delete the objects
      */
-    public function deleteManyByIdentifiers(array $identifiers);
+    public function deleteManyByIdentifiers(array $identifiers, $routing = false);
 }
