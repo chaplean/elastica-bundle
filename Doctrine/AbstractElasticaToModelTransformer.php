@@ -3,6 +3,7 @@
 namespace FOS\ElasticaBundle\Doctrine;
 
 use Doctrine\Common\Persistence\ManagerRegistry;
+use FOS\ElasticaBundle\Exception\MissingDoctrineObjectException;
 use FOS\ElasticaBundle\HybridResult;
 use FOS\ElasticaBundle\Transformer\AbstractElasticaToModelTransformer as BaseTransformer;
 use FOS\ElasticaBundle\Transformer\HighlightableModelInterface;
@@ -86,8 +87,13 @@ abstract class AbstractElasticaToModelTransformer extends BaseTransformer
         $objects = $this->findByIdentifiers($ids, $this->options['hydrate']);
         $objectsCnt = count($objects);
         $elasticaObjectsCnt = count($elasticaObjects);
+
         if (!$this->options['ignore_missing'] && $objectsCnt < $elasticaObjectsCnt) {
-            throw new \RuntimeException(sprintf('Cannot find corresponding Doctrine objects (%d) for all Elastica results (%d). IDs: %s', $objectsCnt, $elasticaObjectsCnt, join(', ', $ids)));
+            $existingObjects = array_map(function ($object) {
+                return $object->getId();
+            }, $objects);
+
+            throw new MissingDoctrineObjectException(sprintf('Cannot find corresponding Doctrine objects (%d) for all Elastica results (%d). IDs: %s', $objectsCnt, $elasticaObjectsCnt, join(', ', $ids)), \array_diff($ids, $existingObjects));
         };
 
         $propertyAccessor = $this->propertyAccessor;
